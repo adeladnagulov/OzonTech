@@ -3,8 +3,8 @@ package domain
 type Status string
 
 const (
-	planned     Status = "planned"
-	in_progress Status = "in_progress"
-	canceled    Status = "canceled"
-	done        Status = "done"
+	PLANNED     Status = "planned"
+	IN_PROGRESS Status = "in_progress"
+	CANCELED    Status = "canceled"
+	DONE        Status = "done"
 )
