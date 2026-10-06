@@ -1,4 +1,4 @@
-package srorage
+package storage
 
 import (
 	"encoding/json"
