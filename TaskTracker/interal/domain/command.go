@@ -7,4 +7,5 @@ const (
 	EXIT   Command = "exit"
 	ADD    Command = "add"
 	GETALL Command = "get_all"
+	GET    Command = "get"
 )

@@ -84,3 +84,17 @@ func (r *TaskRepo) GetTasksList() ([]domain.Task, error) {
 	})
 	return filedata.Tasks, nil
 }
+
+func (r *TaskRepo) GetTask(id domain.TaskId) (domain.Task, error) {
+	filedata, err := r.load()
+	if err != nil {
+		return domain.Task{}, fmt.Errorf("search error in the file: %w", err)
+	}
+
+	for _, v := range filedata.Tasks {
+		if v.Id == id {
+			return v, nil
+		}
+	}
+	return domain.Task{}, domain.ErrTaskNotFound
+}

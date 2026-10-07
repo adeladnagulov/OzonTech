@@ -10,6 +10,7 @@ type Repo interface {
 	GetNextId() (domain.TaskId, error)
 	AddTask(task domain.Task) error
 	GetTasksList() ([]domain.Task, error)
+	GetTask(id domain.TaskId) (domain.Task, error)
 }
 
 type TaskService struct {
@@ -45,4 +46,12 @@ func (s *TaskService) GetAllTasks() ([]domain.Task, error) {
 		return nil, fmt.Errorf("failed receiving tasks: %w", err)
 	}
 	return tasks, nil
+}
+
+func (s *TaskService) GetTask(id int64) (domain.Task, error) {
+	task, err := s.repo.GetTask(domain.TaskId(id))
+	if err != nil {
+		return domain.Task{}, fmt.Errorf("failed receiving task by id: %w", err)
+	}
+	return task, nil
 }

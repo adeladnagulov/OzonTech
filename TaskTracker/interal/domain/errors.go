@@ -5,4 +5,5 @@ import "errors"
 var (
 	ErrIncurrectData     = errors.New("data obtained is incorrect")
 	ErrDeadlineInThePast = errors.New("set deadline in the past")
+	ErrTaskNotFound      = errors.New("task could not be found")
 )

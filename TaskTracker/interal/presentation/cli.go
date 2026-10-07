@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"task-tracker/interal/domain"
 	"task-tracker/interal/usecase"
@@ -61,6 +62,25 @@ func (c *Cli) Run() error {
 				fmt.Println(v)
 				fmt.Println()
 			}
+		case string(domain.GET):
+			if len(args) != 1 {
+				fmt.Println("Формат ввода должен быть следующим: get 1")
+				continue
+			}
+			id, err := strconv.Atoi(args[0])
+			if err != nil {
+				fmt.Println("Переданный id некорретный")
+				continue
+			}
+			task, err := c.service.GetTask(int64(id))
+			if err != nil {
+				if errors.Is(err, domain.ErrTaskNotFound) {
+					fmt.Println("Задачи не существует")
+					continue
+				}
+				return err
+			}
+			fmt.Println(task)
 		default:
 			fmt.Println("Неизвестная команда")
 		}
