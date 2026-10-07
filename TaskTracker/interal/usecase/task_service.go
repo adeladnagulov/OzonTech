@@ -3,7 +3,6 @@ package usecase
 import (
 	"errors"
 	"task-tracker/interal/domain"
-	"task-tracker/interal/storage"
 	"time"
 )
 
@@ -11,11 +10,16 @@ var (
 	ErrDeadlineInThePast = errors.New("set deadline in the past")
 )
 
-type TaskService struct {
-	repo *storage.TaskRepo
+type Repo interface {
+	GetNextId() (domain.TaskId, error)
+	AddTask(task domain.Task) error
 }
 
-func NewTaskService(repo *storage.TaskRepo) *TaskService {
+type TaskService struct {
+	repo Repo
+}
+
+func NewTaskService(repo Repo) *TaskService {
 	return &TaskService{
 		repo: repo,
 	}
