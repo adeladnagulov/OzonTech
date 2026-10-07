@@ -46,7 +46,7 @@ func (c *Cli) Run() error {
 			}
 			err = c.service.AddNewTask(title, deadline)
 			if err != nil {
-				if errors.Is(err, usecase.ErrDeadlineInThePast) {
+				if errors.Is(err, domain.ErrDeadlineInThePast) {
 					fmt.Println("Указанная дата дедлайна уже прошла")
 					continue
 				}

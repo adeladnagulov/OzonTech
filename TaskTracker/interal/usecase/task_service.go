@@ -1,13 +1,9 @@
 package usecase
 
 import (
-	"errors"
+	"fmt"
 	"task-tracker/interal/domain"
 	"time"
-)
-
-var (
-	ErrDeadlineInThePast = errors.New("set deadline in the past")
 )
 
 type Repo interface {
@@ -27,17 +23,17 @@ func NewTaskService(repo Repo) *TaskService {
 
 func (s *TaskService) AddNewTask(title string, deadline time.Time) error {
 	if deadline.Before(time.Now()) {
-		return ErrDeadlineInThePast
+		return domain.ErrDeadlineInThePast
 	}
 
 	id, err := s.repo.GetNextId()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to obtain nextId: %w", err)
 	}
 	task := domain.NewTask(id, title, deadline)
-	err = s.repo.AddTask(*task)
+	err = s.repo.AddTask(task)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to added new task: %w", err)
 	}
 	return nil
 }

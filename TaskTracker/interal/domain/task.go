@@ -9,8 +9,8 @@ type Task struct {
 	Deadline time.Time `json:"deadline"`
 }
 
-func NewTask(id TaskId, title string, deadline time.Time) *Task {
-	return &Task{
+func NewTask(id TaskId, title string, deadline time.Time) Task {
+	return Task{
 		Id:       id,
 		Title:    title,
 		Status:   PLANNED,

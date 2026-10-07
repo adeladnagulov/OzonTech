@@ -3,12 +3,9 @@ package storage
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"task-tracker/interal/domain"
-)
-
-var (
-	ErrIncurrectData = errors.New("data obtained is incorrect")
 )
 
 type fileData struct {
@@ -46,7 +43,7 @@ func (r *TaskRepo) load() (*fileData, error) {
 func (r *TaskRepo) AddTask(task domain.Task) error {
 	fileData, err := r.load()
 	if err != nil {
-		return err
+		return fmt.Errorf("search error in the file: %w", err)
 	}
 
 	fileData.Tasks = append(fileData.Tasks, task)
@@ -54,7 +51,7 @@ func (r *TaskRepo) AddTask(task domain.Task) error {
 
 	data, err := json.Marshal(fileData)
 	if err != nil {
-		return ErrIncurrectData
+		return domain.ErrIncurrectData
 	}
 	err = os.WriteFile(r.path, data, 0o644)
 	if err != nil {
@@ -66,7 +63,7 @@ func (r *TaskRepo) AddTask(task domain.Task) error {
 func (r *TaskRepo) GetNextId() (domain.TaskId, error) {
 	fieldData, err := r.load()
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("search error in the file: %w", err)
 	}
 	return fieldData.NextId, nil
 }
