@@ -52,6 +52,15 @@ func (c *Cli) Run() error {
 				}
 				return err
 			}
+		case string(domain.GETALL):
+			tasks, err := c.service.GetAllTasks()
+			if err != nil {
+				return err
+			}
+			for _, v := range tasks {
+				fmt.Println(v)
+				fmt.Println()
+			}
 		default:
 			fmt.Println("Неизвестная команда")
 		}

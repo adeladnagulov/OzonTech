@@ -9,6 +9,7 @@ import (
 type Repo interface {
 	GetNextId() (domain.TaskId, error)
 	AddTask(task domain.Task) error
+	GetTasksList() ([]domain.Task, error)
 }
 
 type TaskService struct {
@@ -36,4 +37,12 @@ func (s *TaskService) AddNewTask(title string, deadline time.Time) error {
 		return fmt.Errorf("failed to added new task: %w", err)
 	}
 	return nil
+}
+
+func (s *TaskService) GetAllTasks() ([]domain.Task, error) {
+	tasks, err := s.repo.GetTasksList()
+	if err != nil {
+		return nil, fmt.Errorf("failed receiving tasks: %w", err)
+	}
+	return tasks, nil
 }

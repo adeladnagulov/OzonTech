@@ -1,11 +1,14 @@
 package storage
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"task-tracker/interal/domain"
+	"time"
 )
 
 type fileData struct {
@@ -66,4 +69,18 @@ func (r *TaskRepo) GetNextId() (domain.TaskId, error) {
 		return -1, fmt.Errorf("search error in the file: %w", err)
 	}
 	return fieldData.NextId, nil
+}
+
+func (r *TaskRepo) GetTasksList() ([]domain.Task, error) {
+	filedata, err := r.load()
+	if err != nil {
+		return nil, fmt.Errorf("search error in the file: %w", err)
+	}
+	slices.SortFunc(filedata.Tasks, func(a, b domain.Task) int {
+		if n := time.Time.Compare(a.Deadline, b.Deadline); n != 0 {
+			return n
+		}
+		return cmp.Compare(a.Id, b.Id)
+	})
+	return filedata.Tasks, nil
 }
