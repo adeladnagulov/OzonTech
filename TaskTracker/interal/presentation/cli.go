@@ -2,25 +2,30 @@ package presentation
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"task-tracker/interal/domain"
+	"task-tracker/interal/usecase"
+	"time"
 )
 
 type Cli struct {
-	scan *bufio.Scanner
+	scan    *bufio.Scanner
+	service *usecase.TaskService
 }
 
-func NewCli() *Cli {
+func NewCli(service *usecase.TaskService) *Cli {
 	return &Cli{
-		scan: bufio.NewScanner(os.Stdin),
+		scan:    bufio.NewScanner(os.Stdin),
+		service: service,
 	}
 }
 
 func (c *Cli) Run() error {
 	for {
-		command, _, err := c.parseInput()
+		command, args, err := c.parseInput()
 		if err != nil {
 			return err
 		}
@@ -28,8 +33,27 @@ func (c *Cli) Run() error {
 		switch command {
 		case string(domain.EXIT):
 			return nil
+		case string(domain.ADD):
+			if len(args) != 2 {
+				fmt.Println("Формат ввода должен быть следующим: add задача_1 2006-01-02")
+				continue
+			}
+			title := args[0]
+			deadline, err := time.Parse("2006-01-02", args[1])
+			if err != nil {
+				fmt.Println("Некорректный формат дедлайна")
+				continue
+			}
+			err = c.service.AddNewTask(title, deadline)
+			if err != nil {
+				if errors.Is(err, usecase.ErrDeadlineInThePast) {
+					fmt.Println("Указанная дата дедлайна уже прошла")
+					continue
+				}
+				return err
+			}
 		default:
-			fmt.Println("неизвестная команда")
+			fmt.Println("Неизвестная команда")
 		}
 	}
 }

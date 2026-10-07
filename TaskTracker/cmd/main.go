@@ -1,8 +1,18 @@
 package main
 
-import "task-tracker/interal/presentation"
+import (
+	"log"
+	"task-tracker/interal/presentation"
+	"task-tracker/interal/storage"
+	"task-tracker/interal/usecase"
+)
 
 func main() {
-	cli := presentation.NewCli()
-	cli.Run()
+	repo := storage.NewTaskRepo("tasks.json")
+	service := usecase.NewTaskService(repo)
+	cli := presentation.NewCli(service)
+	err := cli.Run()
+	if err != nil {
+		log.Println(err.Error())
+	}
 }

@@ -1,9 +1,14 @@
 package usecase
 
 import (
+	"errors"
 	"task-tracker/interal/domain"
 	"task-tracker/interal/storage"
 	"time"
+)
+
+var (
+	ErrDeadlineInThePast = errors.New("set deadline in the past")
 )
 
 type TaskService struct {
@@ -17,6 +22,10 @@ func NewTaskService(repo *storage.TaskRepo) *TaskService {
 }
 
 func (s *TaskService) AddNewTask(title string, deadline time.Time) error {
+	if deadline.Before(time.Now()) {
+		return ErrDeadlineInThePast
+	}
+
 	id, err := s.repo.GetNextId()
 	if err != nil {
 		return err
