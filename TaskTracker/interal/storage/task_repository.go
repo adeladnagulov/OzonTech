@@ -26,7 +26,7 @@ func NewTaskRepo(path string) *TaskRepo {
 	}
 }
 
-func (r *TaskRepo) load() (*fileData, error) {
+func (r *TaskRepo) read() (*fileData, error) {
 	data, err := os.ReadFile(r.path)
 	if errors.Is(err, os.ErrNotExist) {
 		return &fileData{NextId: 1}, nil
@@ -43,18 +43,10 @@ func (r *TaskRepo) load() (*fileData, error) {
 	return &fileData, nil
 }
 
-func (r *TaskRepo) AddTask(task domain.Task) error {
-	fileData, err := r.load()
-	if err != nil {
-		return fmt.Errorf("search error in the file: %w", err)
-	}
-
-	fileData.Tasks = append(fileData.Tasks, task)
-	fileData.NextId++
-
+func (r *TaskRepo) write(fileData *fileData) error {
 	data, err := json.Marshal(fileData)
 	if err != nil {
-		return domain.ErrIncurrectData
+		return domain.ErrIncorrectData
 	}
 	err = os.WriteFile(r.path, data, 0o644)
 	if err != nil {
@@ -63,8 +55,24 @@ func (r *TaskRepo) AddTask(task domain.Task) error {
 	return nil
 }
 
+func (r *TaskRepo) AddTask(task domain.Task) error {
+	fileData, err := r.read()
+	if err != nil {
+		return fmt.Errorf("search error in the file: %w", err)
+	}
+
+	fileData.Tasks = append(fileData.Tasks, task)
+	fileData.NextId++
+
+	err = r.write(fileData)
+	if err != nil {
+		return fmt.Errorf("error write to file: %w", err)
+	}
+	return nil
+}
+
 func (r *TaskRepo) GetNextId() (domain.TaskId, error) {
-	fieldData, err := r.load()
+	fieldData, err := r.read()
 	if err != nil {
 		return -1, fmt.Errorf("search error in the file: %w", err)
 	}
@@ -72,7 +80,7 @@ func (r *TaskRepo) GetNextId() (domain.TaskId, error) {
 }
 
 func (r *TaskRepo) GetTasksList() ([]domain.Task, error) {
-	filedata, err := r.load()
+	filedata, err := r.read()
 	if err != nil {
 		return nil, fmt.Errorf("search error in the file: %w", err)
 	}
@@ -86,7 +94,7 @@ func (r *TaskRepo) GetTasksList() ([]domain.Task, error) {
 }
 
 func (r *TaskRepo) GetTask(id domain.TaskId) (domain.Task, error) {
-	filedata, err := r.load()
+	filedata, err := r.read()
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("search error in the file: %w", err)
 	}
@@ -97,4 +105,34 @@ func (r *TaskRepo) GetTask(id domain.TaskId) (domain.Task, error) {
 		}
 	}
 	return domain.Task{}, domain.ErrTaskNotFound
+}
+
+func (r *TaskRepo) ChangeStatus(id domain.TaskId, newStatus domain.Status) error {
+	filedata, err := r.read()
+	if err != nil {
+		return fmt.Errorf("search error in the file: %w", err)
+	}
+	idx := -1
+	for i := range filedata.Tasks {
+		if filedata.Tasks[i].Id == id {
+			idx = i
+		}
+	}
+	if idx == -1 {
+		return domain.ErrTaskNotFound
+	}
+
+	if filedata.Tasks[idx].Status == newStatus {
+		return domain.ErrStatusAlreadySet
+	}
+	if filedata.Tasks[idx].Status == domain.CANCELED || filedata.Tasks[idx].Status == domain.DONE {
+		return domain.ErrConflictStatus
+	}
+
+	filedata.Tasks[idx].Status = newStatus
+	err = r.write(filedata)
+	if err != nil {
+		return fmt.Errorf("error write to file: %w", err)
+	}
+	return nil
 }

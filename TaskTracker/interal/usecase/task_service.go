@@ -11,6 +11,7 @@ type Repo interface {
 	AddTask(task domain.Task) error
 	GetTasksList() ([]domain.Task, error)
 	GetTask(id domain.TaskId) (domain.Task, error)
+	ChangeStatus(id domain.TaskId, newStatus domain.Status) error
 }
 
 type TaskService struct {
@@ -54,4 +55,16 @@ func (s *TaskService) GetTask(id int64) (domain.Task, error) {
 		return domain.Task{}, fmt.Errorf("failed receiving task by id: %w", err)
 	}
 	return task, nil
+}
+
+func (s *TaskService) ChangeStatus(id int64, newStatus string) error {
+	status, err := domain.ValidStatus(newStatus)
+	if err != nil {
+		return fmt.Errorf("failed receiving status: %w", err)
+	}
+	err = s.repo.ChangeStatus(domain.TaskId(id), status)
+	if err != nil {
+		return fmt.Errorf("failed update status: %w", err)
+	}
+	return nil
 }

@@ -24,6 +24,7 @@ func NewCli(service *usecase.TaskService) *Cli {
 	}
 }
 
+// help, remove, update и упростить
 func (c *Cli) Run() error {
 	for {
 		command, args, err := c.parseInput()
@@ -53,7 +54,7 @@ func (c *Cli) Run() error {
 				}
 				return err
 			}
-		case string(domain.GETALL):
+		case string(domain.GET_ALL):
 			tasks, err := c.service.GetAllTasks()
 			if err != nil {
 				return err
@@ -81,6 +82,33 @@ func (c *Cli) Run() error {
 				return err
 			}
 			fmt.Println(task)
+		case string(domain.CHANGE_STAUS):
+			if len(args) != 2 {
+				fmt.Println("Формат ввода должен быть следующим: change_status 1 done")
+				continue
+			}
+			id, err := strconv.Atoi(args[0])
+			if err != nil {
+				fmt.Println("Переданный id некорретный")
+				continue
+			}
+			status := args[1]
+			err = c.service.ChangeStatus(int64(id), status)
+			if err != nil {
+				if errors.Is(err, domain.ErrStatusAlreadySet) {
+					fmt.Println("Задача уже имеет данный статус")
+					continue
+				}
+				if errors.Is(err, domain.ErrConflictStatus) {
+					fmt.Println("Задачу в статусе `done` или `canceled` менять нельзя")
+					continue
+				}
+				if errors.Is(err, domain.ErrIncorrectStatus) {
+					fmt.Println("Не существующий статус")
+					continue
+				}
+				return err
+			}
 		default:
 			fmt.Println("Неизвестная команда")
 		}
