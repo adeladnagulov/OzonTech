@@ -60,6 +60,11 @@ func (c *Cli) Run() error {
 			if err != nil {
 				return err
 			}
+		case string(domain.EDIT):
+			err := c.edit(args)
+			if err != nil {
+				return err
+			}
 		default:
 			fmt.Println("Неизвестная команда")
 		}
@@ -87,7 +92,7 @@ func (c *Cli) add(args []string) error {
 		fmt.Println("Некорректный формат дедлайна")
 		return nil
 	}
-	err = c.service.AddNewTask(title, deadline)
+	err = c.service.AddNewTask(domain.TaskInpuut{Title: &title, Deadline: &deadline})
 	if err != nil {
 		if errors.Is(err, domain.ErrDeadlineInThePast) {
 			fmt.Println("Указанная дата дедлайна уже прошла")
@@ -178,6 +183,41 @@ func (c *Cli) delete(args []string) error {
 			fmt.Println("Задачи не существует")
 			return nil
 		}
+		return err
+	}
+	return nil
+}
+
+func (c *Cli) edit(args []string) error {
+	var taskIn domain.TaskInpuut
+	switch {
+	case len(args) < 2:
+		fmt.Println("Формат ввода должен быть следующим: edit 1 Newtitle Newdeadline")
+		return nil
+	case len(args) == 2:
+		deadline, err := time.Parse("2006-01-02", args[1])
+		if err != nil {
+			taskIn.Title = &args[1]
+		} else {
+			taskIn.Deadline = &deadline
+		}
+	default:
+		taskIn.Title = &args[1]
+		deadline, err := time.Parse("2006-01-02", args[2])
+		if err != nil {
+			fmt.Println("Некорректный формат дедлайна")
+			return nil
+		}
+		taskIn.Deadline = &deadline
+	}
+	id, err := strconv.Atoi(args[0])
+	if err != nil {
+		fmt.Println("Переданный id некорретный")
+		return nil
+	}
+
+	err = c.service.EditTask(int64(id), taskIn)
+	if err != nil {
 		return err
 	}
 	return nil

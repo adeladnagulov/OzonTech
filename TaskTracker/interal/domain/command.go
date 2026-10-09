@@ -10,4 +10,5 @@ const (
 	GET          Command = "get"
 	CHANGE_STAUS Command = "change_status"
 	DELETE       Command = "delete"
+	EDIT         Command = "edit"
 )

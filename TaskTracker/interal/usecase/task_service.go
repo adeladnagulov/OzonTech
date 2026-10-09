@@ -13,6 +13,7 @@ type Repo interface {
 	GetTask(id domain.TaskId) (domain.Task, error)
 	ChangeStatus(id domain.TaskId, newStatus domain.Status) error
 	DeleteTask(id domain.TaskId) error
+	IncNextId() error
 }
 
 type TaskService struct {
@@ -25,7 +26,8 @@ func NewTaskService(repo Repo) *TaskService {
 	}
 }
 
-func (s *TaskService) AddNewTask(title string, deadline time.Time) error {
+func (s *TaskService) AddNewTask(taskIn domain.TaskInpuut) error {
+	title, deadline := *taskIn.Title, *taskIn.Deadline
 	if deadline.Before(time.Now()) {
 		return domain.ErrDeadlineInThePast
 	}
@@ -38,6 +40,10 @@ func (s *TaskService) AddNewTask(title string, deadline time.Time) error {
 	err = s.repo.AddTask(task)
 	if err != nil {
 		return fmt.Errorf("failed to added new task: %w", err)
+	}
+	err = s.repo.IncNextId()
+	if err != nil {
+		return fmt.Errorf("failed increment id: %w", err)
 	}
 	return nil
 }
@@ -74,6 +80,41 @@ func (s *TaskService) DeleteTask(id int64) error {
 	err := s.repo.DeleteTask(domain.TaskId(id))
 	if err != nil {
 		return fmt.Errorf("failed delete task: %w", err)
+	}
+	return nil
+}
+
+func (s *TaskService) EditTask(id int64, taskIn domain.TaskInpuut) error {
+	task, err := s.GetTask(id)
+	if err != nil {
+		return fmt.Errorf("failed getting task by edit him: %w", err)
+	}
+
+	var title string
+	var deadline time.Time
+	if taskIn.Title != nil {
+		title = *taskIn.Title
+		if title == "" {
+			return domain.ErrEmptyTitle
+		}
+		task.Title = title
+	}
+	if taskIn.Deadline != nil {
+		deadline = *taskIn.Deadline
+		if deadline.Before(time.Now()) {
+			return domain.ErrDeadlineInThePast
+		}
+		task.Deadline = deadline
+	}
+
+	err = s.DeleteTask(id)
+	if err != nil {
+		return fmt.Errorf("failed delete task by edit him: %w", err)
+	}
+
+	err = s.repo.AddTask(task)
+	if err != nil {
+		return fmt.Errorf("failed return updated task: %w", err)
 	}
 	return nil
 }

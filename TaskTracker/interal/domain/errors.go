@@ -9,4 +9,5 @@ var (
 	ErrStatusAlreadySet  = errors.New("status has already been set")
 	ErrConflictStatus    = errors.New("task with the status `done` or `canceled` cannot be changed")
 	ErrIncorrectStatus   = errors.New("status obtained is incorrect")
+	ErrEmptyTitle        = errors.New("task cannot have an empty title")
 )

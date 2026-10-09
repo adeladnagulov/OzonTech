@@ -62,7 +62,6 @@ func (r *TaskRepo) AddTask(task domain.Task) error {
 	}
 
 	fileData.Tasks = append(fileData.Tasks, task)
-	fileData.NextId++
 
 	err = r.write(fileData)
 	if err != nil {
@@ -155,6 +154,21 @@ func (r *TaskRepo) DeleteTask(id domain.TaskId) error {
 	filedata.Tasks = newTasks
 
 	err = r.write(filedata)
+	if err != nil {
+		return fmt.Errorf("error write to file: %w", err)
+	}
+	return nil
+}
+
+func (r *TaskRepo) IncNextId() error {
+	fileData, err := r.read()
+	if err != nil {
+		return fmt.Errorf("search error in the file: %w", err)
+	}
+
+	fileData.NextId++
+
+	err = r.write(fileData)
 	if err != nil {
 		return fmt.Errorf("error write to file: %w", err)
 	}

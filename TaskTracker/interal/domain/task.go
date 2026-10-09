@@ -12,6 +12,11 @@ type Task struct {
 	Deadline time.Time `json:"deadline"`
 }
 
+type TaskInpuut struct {
+	Title    *string
+	Deadline *time.Time
+}
+
 func NewTask(id TaskId, title string, deadline time.Time) Task {
 	return Task{
 		Id:       id,
