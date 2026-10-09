@@ -136,3 +136,27 @@ func (r *TaskRepo) ChangeStatus(id domain.TaskId, newStatus domain.Status) error
 	}
 	return nil
 }
+
+func (r *TaskRepo) DeleteTask(id domain.TaskId) error {
+	filedata, err := r.read()
+	if err != nil {
+		return fmt.Errorf("search error in the file: %w", err)
+	}
+
+	newTasks := make([]domain.Task, len(filedata.Tasks))
+	for i := range filedata.Tasks {
+		if filedata.Tasks[i].Id == id {
+			newTasks = append(filedata.Tasks[:i], filedata.Tasks[i+1:]...)
+		}
+	}
+	if len(filedata.Tasks) == len(newTasks) {
+		return domain.ErrTaskNotFound
+	}
+	filedata.Tasks = newTasks
+
+	err = r.write(filedata)
+	if err != nil {
+		return fmt.Errorf("error write to file: %w", err)
+	}
+	return nil
+}

@@ -12,6 +12,7 @@ type Repo interface {
 	GetTasksList() ([]domain.Task, error)
 	GetTask(id domain.TaskId) (domain.Task, error)
 	ChangeStatus(id domain.TaskId, newStatus domain.Status) error
+	DeleteTask(id domain.TaskId) error
 }
 
 type TaskService struct {
@@ -65,6 +66,14 @@ func (s *TaskService) ChangeStatus(id int64, newStatus string) error {
 	err = s.repo.ChangeStatus(domain.TaskId(id), status)
 	if err != nil {
 		return fmt.Errorf("failed update status: %w", err)
+	}
+	return nil
+}
+
+func (s *TaskService) DeleteTask(id int64) error {
+	err := s.repo.DeleteTask(domain.TaskId(id))
+	if err != nil {
+		return fmt.Errorf("failed delete task: %w", err)
 	}
 	return nil
 }

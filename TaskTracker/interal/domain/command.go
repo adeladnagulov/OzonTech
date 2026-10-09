@@ -9,4 +9,5 @@ const (
 	GET_ALL      Command = "get_all"
 	GET          Command = "get"
 	CHANGE_STAUS Command = "change_status"
+	DELETE       Command = "delete"
 )

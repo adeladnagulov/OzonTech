@@ -109,6 +109,24 @@ func (c *Cli) Run() error {
 				}
 				return err
 			}
+		case string(domain.DELETE):
+			if len(args) != 1 {
+				fmt.Println("Формат ввода должен быть следующим: delete 1")
+				continue
+			}
+			id, err := strconv.Atoi(args[0])
+			if err != nil {
+				fmt.Println("Переданный id некорретный")
+				continue
+			}
+			err = c.service.DeleteTask(int64(id))
+			if err != nil {
+				if errors.Is(err, domain.ErrTaskNotFound) {
+					fmt.Println("Задачи не существует")
+					continue
+				}
+				return err
+			}
 		default:
 			fmt.Println("Неизвестная команда")
 		}
