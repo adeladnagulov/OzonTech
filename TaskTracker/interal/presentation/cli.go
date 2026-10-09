@@ -33,6 +33,8 @@ func (c *Cli) Run() error {
 		}
 
 		switch command {
+		case string(domain.HELP):
+			fmt.Println(c.service.Help())
 		case string(domain.EXIT):
 			return nil
 		case string(domain.ADD):

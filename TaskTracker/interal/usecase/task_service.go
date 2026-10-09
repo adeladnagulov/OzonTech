@@ -118,3 +118,7 @@ func (s *TaskService) EditTask(id int64, taskIn domain.TaskInpuut) error {
 	}
 	return nil
 }
+
+func (s *TaskService) Help() string {
+	return "help - список доступных команд\nexit - выход из программы\nadd {title} {deadline} - добавление новой задачи\nget_all - список всех задач\nget {id} - получение конкретной задачи\nchange_status {id} {newStatus} - изменение статуса задачи\ndelete {id} - удаление задачи\nedit {id} {newtitle} {newDeadline} - изменение задачи"
+}
