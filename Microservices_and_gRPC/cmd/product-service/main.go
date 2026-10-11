@@ -11,6 +11,10 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+const (
+	file string = "data.json"
+)
+
 func main() {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
@@ -20,7 +24,10 @@ func main() {
 	server := grpc.NewServer()
 	reflection.Register(server)
 
-	srv := product.NewProductService()
+	srv, err := product.NewProductService(file)
+	if err != nil {
+		log.Fatalf("failed to init service: %v", err)
+	}
 	pb.RegisterProductServer(server, srv)
 
 	if err := server.Serve(lis); err != nil {
