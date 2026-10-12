@@ -20,7 +20,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-
 	server := grpc.NewServer()
 	reflection.Register(server)
 
