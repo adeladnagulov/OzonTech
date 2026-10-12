@@ -36,6 +36,13 @@ func NewProductService(file string) (*ProductService, error) {
 	return &ProductService{products: products}, nil
 }
 
-func (s *ProductService) GetProduct(context.Context, *pb.GetProductRequest) (*pb.GetProductResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+func (s *ProductService) GetProduct(ctx context.Context, in *pb.GetProductRequest) (*pb.GetProductResponse, error) {
+	if in.Sku <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "invalid id")
+	}
+	product, ok := s.products[in.Sku]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "product not found")
+	}
+	return &pb.GetProductResponse{Sku: in.Sku, Name: product.Name, Price: int32(product.Price)}, nil
 }
