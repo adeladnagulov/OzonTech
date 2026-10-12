@@ -15,3 +15,12 @@ generate:
 .PHONY: run-product
 run-product:
 	go run ./cmd/product-service
+
+.PHONY: run-cart
+run-cart:
+	go run ./cmd/cart
+
+.PHONY: run-all
+run-all:
+	go run ./cmd/product-service &
+	go run ./cmd/cart

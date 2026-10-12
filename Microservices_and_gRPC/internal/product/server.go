@@ -8,7 +8,7 @@ import (
 )
 
 type ProductService struct {
-	pb.ProductServer
+	pb.UnimplementedProductServer
 
 	products map[int64]*Product
 }
