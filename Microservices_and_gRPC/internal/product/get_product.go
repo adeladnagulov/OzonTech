@@ -4,14 +4,12 @@ import (
 	"context"
 	pb "hw_2/pkg/api"
 
-	"github.com/go-playground/validator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *ProductService) GetProduct(ctx context.Context, in *pb.GetProductRequest) (*pb.GetProductResponse, error) {
-	validate := validator.New()
-	if err := validate.Struct(in); err != nil {
+	if err := s.validate.Struct(in); err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid id")
 	}
 	product, ok := s.products[in.Sku]

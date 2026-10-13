@@ -5,12 +5,15 @@ import (
 	"fmt"
 	pb "hw_2/pkg/api"
 	"os"
+
+	"github.com/go-playground/validator"
 )
 
 type ProductService struct {
 	pb.UnimplementedProductServer
 
 	products map[int64]*Product
+	validate *validator.Validate
 }
 
 type Product struct {
@@ -29,5 +32,8 @@ func NewProductService(file string) (*ProductService, error) {
 		return nil, fmt.Errorf("failed to parse products JSON: %w", err)
 	}
 
-	return &ProductService{products: products}, nil
+	return &ProductService{
+		products: products,
+		validate: validator.New(),
+	}, nil
 }
