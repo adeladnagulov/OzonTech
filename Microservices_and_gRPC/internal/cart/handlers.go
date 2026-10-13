@@ -63,8 +63,30 @@ func (h *Handler) AddItem(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Service) GetCart(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
+func (h *Handler) GetCart(w http.ResponseWriter, r *http.Request) {
+	userIdStr := r.PathValue("user_id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("failed parse user_id: %w", err))
+		return
+	}
+	if userId <= 0 {
+		writeError(w, http.StatusBadRequest, ErrUserIdBadRequest)
+		return
+	}
+
+	cart, err := h.service.GetCart(int64(userId))
+	if err != nil {
+		if errors.Is(err, ErrProductNotFound) {
+			writeError(w, http.StatusNotFound, fmt.Errorf("failed get cart by user_id = %d: %w", userId, err))
+			return
+		}
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("failed get cart: %w", err))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(cart)
 }
 
 func writeError(w http.ResponseWriter, code int, desc error) {

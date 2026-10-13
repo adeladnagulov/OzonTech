@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	pb "hw_2/pkg/api"
+	"sort"
 
 	"github.com/go-playground/validator"
 	"google.golang.org/grpc/codes"
@@ -60,6 +61,23 @@ func (s *Service) AddItem(req AddItemReq, ctx context.Context, skuId, userId int
 		cart.TotalPrice += uint32(product.Price) * req.Count
 	}
 	return nil
+}
+
+func (s *Service) GetCart(userId int64) (Cart, error) {
+	cart, exists := s.carts[userId]
+	if !exists {
+		return Cart{}, fmt.Errorf("%w: for user: %d", ErrProductNotFound, userId)
+	}
+	sortedItems := make([]Item, len(cart.Items))
+	copy(sortedItems, cart.Items)
+	sort.Slice(sortedItems, func(i, j int) bool {
+		return cart.Items[i].Sku > cart.Items[j].Sku
+	})
+
+	return Cart{
+		Items:      sortedItems,
+		TotalPrice: cart.TotalPrice,
+	}, nil
 }
 
 func findItem(cart *Cart, sku int64) int {

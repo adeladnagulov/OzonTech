@@ -1,15 +1,15 @@
 package cart
 
 type Cart struct {
-	Items      []Item
-	TotalPrice uint32
+	Items      []Item `json:"items"`
+	TotalPrice uint32 `json:"total_price"`
 }
 
 type Item struct {
-	Sku   int64
-	Name  string
-	Count uint32
-	Price uint32
+	Sku   int64  `json:"sku"`
+	Name  string `json:"name"`
+	Count uint32 `json:"count"`
+	Price uint32 `json:"price"`
 }
 
 type AddItemReq struct {

@@ -21,7 +21,7 @@ func main() {
 	handler := cart.NewHandler(srv)
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", handler.AddItem)
-	mux.HandleFunc("GET /user/{user_id}/cart", srv.GetCart)
+	mux.HandleFunc("GET /user/{user_id}/cart", handler.GetCart)
 
 	log.Println("Starting cart client on :8080")
 	if err = http.ListenAndServe(":8080", mux); err != nil {
