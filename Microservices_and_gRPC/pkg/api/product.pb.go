@@ -23,7 +23,7 @@ const (
 
 type GetProductRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Sku           int64                  `protobuf:"varint,1,opt,name=sku,proto3" json:"sku,omitempty" validate:"required, gt=0"` // @gotags: validate:"required, gt=0"
+	Sku           int64                  `protobuf:"varint,1,opt,name=sku,proto3" json:"sku,omitempty" validate:"required,gt=0"` // @gotags: validate:"required,gt=0"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
