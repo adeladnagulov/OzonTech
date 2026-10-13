@@ -18,8 +18,9 @@ func main() {
 	defer conn.Close()
 
 	srv := cart.NewCartService(pb.NewProductClient(conn))
+	handler := cart.NewHandler(srv)
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", srv.AddItem)
+	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", handler.AddItem)
 	mux.HandleFunc("GET /user/{user_id}/cart", srv.GetCart)
 
 	log.Println("Starting cart client on :8080")
