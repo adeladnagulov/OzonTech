@@ -71,7 +71,7 @@ func (s *Service) GetCart(userId int64) (Cart, error) {
 	sortedItems := make([]Item, len(cart.Items))
 	copy(sortedItems, cart.Items)
 	sort.Slice(sortedItems, func(i, j int) bool {
-		return cart.Items[i].Sku > cart.Items[j].Sku
+		return cart.Items[i].Sku < cart.Items[j].Sku
 	})
 
 	return Cart{
