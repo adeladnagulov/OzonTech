@@ -1,7 +1,11 @@
 package main
 
 import (
-	"hw_2/internal/cart"
+	additem "hw_2/internal/cart/http/cart/add_item"
+	"hw_2/internal/cart/http/cart/get"
+	addUseCase "hw_2/internal/cart/usecase/add_item"
+	getUseCase "hw_2/internal/cart/usecase/get"
+	repository "hw_2/internal/repository/cart"
 	pb "hw_2/pkg/api"
 	"log"
 	"net/http"
@@ -17,11 +21,16 @@ func main() {
 	}
 	defer conn.Close()
 
-	srv := cart.NewCartService(pb.NewProductClient(conn))
-	handler := cart.NewHandler(srv)
+	repo := repository.NewCartsRepo()
+	addUc := addUseCase.NewAddUseCase(repo, pb.NewProductClient(conn))
+	getUc := getUseCase.NewGetUseCase(repo, pb.NewProductClient(conn))
+
+	addH := additem.NewHandler(addUc)
+	getH := get.NewHandler(getUc)
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", handler.AddItem)
-	mux.HandleFunc("GET /user/{user_id}/cart", handler.GetCart)
+	mux.HandleFunc("POST /user/{user_id}/cart/{sku_id}", addH.AddItem)
+	mux.HandleFunc("GET /user/{user_id}/cart", getH.GetCart)
 
 	log.Println("Starting cart client on :8080")
 	if err = http.ListenAndServe(":8080", mux); err != nil {
