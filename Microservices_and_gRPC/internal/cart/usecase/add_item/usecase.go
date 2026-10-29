@@ -15,11 +15,11 @@ import (
 
 type AddUseCase struct {
 	repo          cartCreator
-	productClient pb.ProductClient
+	productClient cartProductClient
 	validate      *validator.Validate
 }
 
-func NewAddUseCase(repo cartCreator, productClient pb.ProductClient) *AddUseCase {
+func NewAddUseCase(repo cartCreator, productClient cartProductClient) *AddUseCase {
 	return &AddUseCase{
 		repo:          repo,
 		productClient: productClient,

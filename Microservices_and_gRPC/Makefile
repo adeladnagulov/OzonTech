@@ -11,6 +11,7 @@ generate:
 	api/product.proto
 
 	protoc-go-inject-tag -input="./pkg/api/*.pb.go"	
+	go generate ./...
 
 .PHONY: run-product
 run-product:
@@ -24,3 +25,9 @@ run-cart:
 run-all:
 	go run ./cmd/product-service &
 	go run ./cmd/cart
+
+.PHONY: test
+test:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -func=coverage.out
+	go tool cover -html=coverage.out -o coverage.html
