@@ -69,7 +69,7 @@
 				
 				<option value="file6">hw_2/internal/cart/usecase/get/usecase.go (100.0%)</option>
 				
-				<option value="file7">hw_2/internal/product/get_product.go (0.0%)</option>
+				<option value="file7">hw_2/internal/product/get_product.go (100.0%)</option>
 				
 				<option value="file8">hw_2/internal/product/server.go (0.0%)</option>
 				
@@ -427,14 +427,14 @@ import (
 )
 
 func (s *ProductService) GetProduct(ctx context.Context, in *pb.GetProductRequest) (*pb.GetProductResponse, error) {
-        <span class="cov0" title="0">if err := s.validate.Struct(in); err != nil </span>{
-                <span class="cov0" title="0">return nil, status.Error(codes.InvalidArgument, "invalid id")
+        <span class="cov8" title="1">if err := s.validate.Struct(in); err != nil </span>{
+                <span class="cov8" title="1">return nil, status.Error(codes.InvalidArgument, "invalid id")
 </span>        }
-        <span class="cov0" title="0">product, ok := s.products[in.Sku]
+        <span class="cov8" title="1">product, ok := s.products[in.Sku]
         if !ok </span>{
-                <span class="cov0" title="0">return nil, status.Error(codes.NotFound, "product not found")
+                <span class="cov8" title="1">return nil, status.Error(codes.NotFound, "product not found")
 </span>        }
-        <span class="cov0" title="0">return &amp;pb.GetProductResponse{Sku: in.Sku, Name: product.Name, Price: int32(product.Price)}, nil</span>
+        <span class="cov8" title="1">return &amp;pb.GetProductResponse{Sku: in.Sku, Name: product.Name, Price: int32(product.Price)}, nil</span>
 }
 </pre>
 		
