@@ -67,7 +67,7 @@
 				
 				<option value="file5">hw_2/internal/cart/usecase/add_item/usecase.go (100.0%)</option>
 				
-				<option value="file6">hw_2/internal/cart/usecase/get/usecase.go (0.0%)</option>
+				<option value="file6">hw_2/internal/cart/usecase/get/usecase.go (100.0%)</option>
 				
 				<option value="file7">hw_2/internal/product/get_product.go (0.0%)</option>
 				
@@ -116,7 +116,7 @@ func main() {
 </span>
         <span class="cov0" title="0">repo := repository.NewCartsRepo()
         addUc := addUseCase.NewAddUseCase(repo, pb.NewProductClient(conn))
-        getUc := getUseCase.NewGetUseCase(repo, pb.NewProductClient(conn))
+        getUc := getUseCase.NewGetUseCase(repo)
 </span>
         <span class="cov0" title="0">addH := additem.NewHandler(addUc)
         getH := get.NewHandler(getUc)
@@ -385,34 +385,31 @@ func findItem(cart *cart.Cart, sku int64) int {
 import (
         "fmt"
         "hw_2/internal/cart/domain/cart"
-        pb "hw_2/pkg/api"
         "sort"
 )
 
 type GetUseCase struct {
-        repo          cartGetter
-        productClient pb.ProductClient
+        repo cartGetter
 }
 
-func NewGetUseCase(repo cartGetter, productClient pb.ProductClient) *GetUseCase {
-        <span class="cov0" title="0">return &amp;GetUseCase{
-                repo:          repo,
-                productClient: productClient,
+func NewGetUseCase(repo cartGetter) *GetUseCase {
+        <span class="cov8" title="1">return &amp;GetUseCase{
+                repo: repo,
 </span>        }
 }
 
 func (uc *GetUseCase) GetCart(userId int64) (cart.Cart, error) {
-        <span class="cov0" title="0">c, err := uc.repo.Get(userId)
+        <span class="cov8" title="1">c, err := uc.repo.Get(userId)
         if err != nil </span>{
-                <span class="cov0" title="0">return cart.Cart{}, fmt.Errorf("%w: for user: %d", err, userId)
+                <span class="cov8" title="1">return cart.Cart{}, fmt.Errorf("%w: for user: %d", err, userId)
 </span>        }
-        <span class="cov0" title="0">sortedItems := make([]cart.Item, len(c.Items))
+        <span class="cov8" title="1">sortedItems := make([]cart.Item, len(c.Items))
         copy(sortedItems, c.Items)
         sort.Slice(sortedItems, func(i, j int) bool </span>{
-                <span class="cov0" title="0">return c.Items[i].Sku &lt; c.Items[j].Sku
+                <span class="cov8" title="1">return c.Items[i].Sku &lt; c.Items[j].Sku
 </span>        })
 
-        <span class="cov0" title="0">return cart.Cart{
+        <span class="cov8" title="1">return cart.Cart{
                 Items:      sortedItems,
                 TotalPrice: c.TotalPrice,
         }, nil</span>

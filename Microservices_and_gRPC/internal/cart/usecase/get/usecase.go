@@ -3,19 +3,16 @@ package get
 import (
 	"fmt"
 	"hw_2/internal/cart/domain/cart"
-	pb "hw_2/pkg/api"
 	"sort"
 )
 
 type GetUseCase struct {
-	repo          cartGetter
-	productClient pb.ProductClient
+	repo cartGetter
 }
 
-func NewGetUseCase(repo cartGetter, productClient pb.ProductClient) *GetUseCase {
+func NewGetUseCase(repo cartGetter) *GetUseCase {
 	return &GetUseCase{
-		repo:          repo,
-		productClient: productClient,
+		repo: repo,
 	}
 }
 

@@ -23,7 +23,7 @@ func main() {
 
 	repo := repository.NewCartsRepo()
 	addUc := addUseCase.NewAddUseCase(repo, pb.NewProductClient(conn))
-	getUc := getUseCase.NewGetUseCase(repo, pb.NewProductClient(conn))
+	getUc := getUseCase.NewGetUseCase(repo)
 
 	addH := additem.NewHandler(addUc)
 	getH := get.NewHandler(getUc)
