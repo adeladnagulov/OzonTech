@@ -1,0 +1,8 @@
+{
+    "go.buildTags": "api",
+    "go.testTags": "api",
+    "gopls": {
+        "build.buildFlags": ["-tags=api"],
+        "ui.semanticTokens": true
+    }
+}

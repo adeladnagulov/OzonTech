@@ -31,3 +31,11 @@ test:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
 	go tool cover -html=coverage.out -o coverage.html
+
+.PHONY: test-api
+test-api:
+	go test -v -count=1 -tags=api ./test/...
+
+.PHONY: test-race
+test-race:
+	go test -race ./...
