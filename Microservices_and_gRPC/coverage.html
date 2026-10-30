@@ -67,7 +67,7 @@
 				
 				<option value="file5">hw_2/internal/cart/usecase/add_item/usecase.go (100.0%)</option>
 				
-				<option value="file6">hw_2/internal/cart/usecase/get/usecase.go (100.0%)</option>
+				<option value="file6">hw_2/internal/cart/usecase/get/usecase.go (98.0%)</option>
 				
 				<option value="file7">hw_2/internal/product/get_product.go (100.0%)</option>
 				
@@ -115,8 +115,9 @@ func main() {
         <span class="cov0" title="0">defer conn.Close()
 </span>
         <span class="cov0" title="0">repo := repository.NewCartsRepo()
-        addUc := addUseCase.NewAddUseCase(repo, pb.NewProductClient(conn))
-        getUc := getUseCase.NewGetUseCase(repo)
+        productClient := pb.NewProductClient(conn)
+        addUc := addUseCase.NewAddUseCase(repo, productClient)
+        getUc := getUseCase.NewGetUseCase(repo, productClient)
 </span>
         <span class="cov0" title="0">addH := additem.NewHandler(addUc)
         getH := get.NewHandler(getUc)
@@ -269,10 +270,13 @@ func (h *Handler) GetCart(w http.ResponseWriter, r *http.Request) {
                 return
 </span>        }
 
-        <span class="cov0" title="0">c, err := h.us.GetCart(int64(userId))
+        <span class="cov0" title="0">c, err := h.us.GetCart(r.Context(), int64(userId))
         if err != nil </span>{
                 <span class="cov0" title="0">if errors.Is(err, cart.ErrProductNotFound) </span>{
                         <span class="cov0" title="0">response.Problem(w, http.StatusNotFound, fmt.Errorf("failed get cart by user_id = %d: %w", userId, err))
+                        return
+</span>                } else <span class="cov0" title="0">if errors.Is(err, cart.ErrProductNotFound) </span>{
+                        <span class="cov0" title="0">response.Problem(w, http.StatusPreconditionFailed, err)
                         return
 </span>                }
                 <span class="cov0" title="0">response.Problem(w, http.StatusInternalServerError, fmt.Errorf("failed get cart: %w", err))
@@ -384,35 +388,84 @@ func findItem(cart *cart.Cart, sku int64) int {
 		<pre class="file" id="file6" style="display: none">package get
 
 import (
+        "context"
         "fmt"
         "hw_2/internal/cart/domain/cart"
         "sort"
+        "time"
+
+        pb "hw_2/pkg/api"
+
+        "golang.org/x/sync/errgroup"
+        "google.golang.org/grpc/codes"
+        "google.golang.org/grpc/status"
 )
 
 type GetUseCase struct {
-        repo cartGetter
+        repo          cartGetter
+        productClient cartProductClient
 }
 
-func NewGetUseCase(repo cartGetter) *GetUseCase {
+func NewGetUseCase(repo cartGetter, productClient cartProductClient) *GetUseCase {
         <span class="cov8" title="1">return &amp;GetUseCase{
-                repo: repo,
+                repo:          repo,
+                productClient: productClient,
 </span>        }
 }
 
-func (uc *GetUseCase) GetCart(userId int64) (cart.Cart, error) {
+func (uc *GetUseCase) GetCart(ctx context.Context, userId int64) (cart.Cart, error) {
         <span class="cov8" title="1">c, err := uc.repo.Get(userId)
         if err != nil </span>{
                 <span class="cov8" title="1">return cart.Cart{}, fmt.Errorf("%w: for user: %d", err, userId)
 </span>        }
-        <span class="cov8" title="1">sortedItems := make([]cart.Item, len(c.Items))
-        copy(sortedItems, c.Items)
-        sort.Slice(sortedItems, func(i, j int) bool </span>{
-                <span class="cov8" title="1">return c.Items[i].Sku &lt; c.Items[j].Sku
+        <span class="cov8" title="1">if len(c.Items) == 0 </span>{
+                <span class="cov8" title="1">return cart.Cart{Items: []cart.Item{}, TotalPrice: 0}, nil
+</span>        }
+        <span class="cov8" title="1">ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+        defer cancel()
+</span>
+        <span class="cov8" title="1">g, ctx := errgroup.WithContext(ctx)
+</span>
+        <span class="cov8" title="1">results := make([]*pb.GetProductResponse, len(c.Items))
+</span>
+        <span class="cov8" title="1">for i, item := range c.Items </span>{
+                <span class="cov8" title="1">g.Go(func() error </span>{
+                        <span class="cov8" title="1">resp, err := uc.productClient.GetProduct(ctx, &amp;pb.GetProductRequest{Sku: item.Sku})
+                        if err != nil </span>{
+                                <span class="cov8" title="1">return fmt.Errorf("failed to get product %d: %w", item.Sku, err)
+</span>                        }
+
+                        <span class="cov8" title="1">results[i] = resp
+                        return nil</span>
+                })
+        }
+        <span class="cov8" title="1">if err := g.Wait(); err != nil </span>{
+                <span class="cov8" title="1">if status.Code(err) == codes.NotFound </span>{
+                        <span class="cov8" title="1">return cart.Cart{}, cart.ErrProductNotFound
+</span>                }
+                <span class="cov0" title="0">return cart.Cart{}, cart.ErrGRPCUnavailable</span>
+        }
+
+        <span class="cov8" title="1">finalItems := make([]cart.Item, len(results))
+        var totalPrice uint32
+</span>
+        <span class="cov8" title="1">for i, resp := range results </span>{
+                <span class="cov8" title="1">finalItems[i] = cart.Item{
+                        Sku:   resp.Sku,
+                        Name:  resp.Name,
+                        Count: c.Items[i].Count,
+                        Price: uint32(resp.Price),
+</span>                }
+                <span class="cov8" title="1">totalPrice += uint32(resp.Price) * c.Items[i].Count
+</span>        }
+
+        <span class="cov8" title="1">sort.Slice(finalItems, func(i, j int) bool </span>{
+                <span class="cov8" title="1">return finalItems[i].Sku &lt; finalItems[j].Sku
 </span>        })
 
         <span class="cov8" title="1">return cart.Cart{
-                Items:      sortedItems,
-                TotalPrice: c.TotalPrice,
+                Items:      finalItems,
+                TotalPrice: totalPrice,
         }, nil</span>
 }
 </pre>
@@ -489,7 +542,7 @@ import (
 
 type CartsRepo struct {
         data map[int64]*cart.Cart
-        mu   *sync.RWMutex
+        mu   sync.RWMutex
 }
 
 func NewCartsRepo() *CartsRepo {

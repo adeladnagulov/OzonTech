@@ -7,7 +7,7 @@ import (
 
 type CartsRepo struct {
 	data map[int64]*cart.Cart
-	mu   *sync.RWMutex
+	mu   sync.RWMutex
 }
 
 func NewCartsRepo() *CartsRepo {

@@ -22,8 +22,9 @@ func main() {
 	defer conn.Close()
 
 	repo := repository.NewCartsRepo()
-	addUc := addUseCase.NewAddUseCase(repo, pb.NewProductClient(conn))
-	getUc := getUseCase.NewGetUseCase(repo)
+	productClient := pb.NewProductClient(conn)
+	addUc := addUseCase.NewAddUseCase(repo, productClient)
+	getUc := getUseCase.NewGetUseCase(repo, productClient)
 
 	addH := additem.NewHandler(addUc)
 	getH := get.NewHandler(getUc)

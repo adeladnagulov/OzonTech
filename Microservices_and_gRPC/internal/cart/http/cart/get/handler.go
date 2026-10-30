@@ -32,10 +32,13 @@ func (h *Handler) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := h.us.GetCart(int64(userId))
+	c, err := h.us.GetCart(r.Context(), int64(userId))
 	if err != nil {
 		if errors.Is(err, cart.ErrProductNotFound) {
 			response.Problem(w, http.StatusNotFound, fmt.Errorf("failed get cart by user_id = %d: %w", userId, err))
+			return
+		} else if errors.Is(err, cart.ErrProductNotFound) {
+			response.Problem(w, http.StatusPreconditionFailed, err)
 			return
 		}
 		response.Problem(w, http.StatusInternalServerError, fmt.Errorf("failed get cart: %w", err))

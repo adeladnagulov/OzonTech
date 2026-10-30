@@ -10,10 +10,13 @@
 package get_test
 
 import (
+	context "context"
 	cart "hw_2/internal/cart/domain/cart"
+	product "hw_2/pkg/api"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
+	grpc "google.golang.org/grpc"
 )
 
 // MockcartGetter is a mock of cartGetter interface.
@@ -53,4 +56,48 @@ func (m *MockcartGetter) Get(userId int64) (*cart.Cart, error) {
 func (mr *MockcartGetterMockRecorder) Get(userId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockcartGetter)(nil).Get), userId)
+}
+
+// MockcartProductClient is a mock of cartProductClient interface.
+type MockcartProductClient struct {
+	ctrl     *gomock.Controller
+	recorder *MockcartProductClientMockRecorder
+	isgomock struct{}
+}
+
+// MockcartProductClientMockRecorder is the mock recorder for MockcartProductClient.
+type MockcartProductClientMockRecorder struct {
+	mock *MockcartProductClient
+}
+
+// NewMockcartProductClient creates a new mock instance.
+func NewMockcartProductClient(ctrl *gomock.Controller) *MockcartProductClient {
+	mock := &MockcartProductClient{ctrl: ctrl}
+	mock.recorder = &MockcartProductClientMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockcartProductClient) EXPECT() *MockcartProductClientMockRecorder {
+	return m.recorder
+}
+
+// GetProduct mocks base method.
+func (m *MockcartProductClient) GetProduct(ctx context.Context, in *product.GetProductRequest, opts ...grpc.CallOption) (*product.GetProductResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetProduct", varargs...)
+	ret0, _ := ret[0].(*product.GetProductResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProduct indicates an expected call of GetProduct.
+func (mr *MockcartProductClientMockRecorder) GetProduct(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProduct", reflect.TypeOf((*MockcartProductClient)(nil).GetProduct), varargs...)
 }
