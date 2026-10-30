@@ -1,9 +1,13 @@
 package repository
 
-import "hw_2/internal/cart/domain/cart"
+import (
+	"hw_2/internal/cart/domain/cart"
+	"sync"
+)
 
 type CartsRepo struct {
 	data map[int64]*cart.Cart
+	mu   *sync.RWMutex
 }
 
 func NewCartsRepo() *CartsRepo {
@@ -12,19 +16,30 @@ func NewCartsRepo() *CartsRepo {
 	}
 }
 
-func (repo *CartsRepo) Create(userId int64) *cart.Cart {
+func (repo *CartsRepo) Update(userId int64, fn func(*cart.Cart)) {
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+
 	c, exists := repo.data[userId]
 	if !exists {
-		repo.data[int64(userId)] = &cart.Cart{
+		c = &cart.Cart{
 			Items:      []cart.Item{},
-			TotalPrice: 0,
-		}
-		c = repo.data[int64(userId)]
+			TotalPrice: 0}
+		repo.data[userId] = c
 	}
-	return c
+	fn(c)
+}
+
+func (repo *CartsRepo) Create(userId int64) *cart.Cart {
+	var rez *cart.Cart
+	repo.Update(userId, func(c *cart.Cart) { rez = c })
+	return rez
 }
 
 func (repo *CartsRepo) Get(userId int64) (*cart.Cart, error) {
+	repo.mu.RLock()
+	defer repo.mu.RUnlock()
+
 	c, exists := repo.data[userId]
 	if !exists {
 		return nil, cart.ErrProductNotFound

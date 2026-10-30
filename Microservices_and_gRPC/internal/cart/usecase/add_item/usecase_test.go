@@ -30,8 +30,10 @@ func TestAddItem(t *testing.T) {
 			name: "success_add_new_item_in_empmy_cart",
 			setup: func(repo *MockcartCreator, productClient *MockcartProductClient, testCart *cart.Cart) {
 				repo.EXPECT().
-					Create(gomock.Any()).
-					Return(testCart)
+					Update(gomock.Any(), gomock.Any()).
+					Do(func(id int64, fn func(*cart.Cart)) {
+						fn(testCart)
+					})
 				productClient.EXPECT().
 					GetProduct(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(&pb.GetProductResponse{
@@ -88,8 +90,10 @@ func TestAddItem(t *testing.T) {
 				})
 				testCart.TotalPrice = 550
 				repo.EXPECT().
-					Create(gomock.Any()).
-					Return(testCart)
+					Update(gomock.Any(), gomock.Any()).
+					Do(func(id int64, fn func(*cart.Cart)) {
+						fn(testCart)
+					})
 				productClient.EXPECT().
 					GetProduct(gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(&pb.GetProductResponse{

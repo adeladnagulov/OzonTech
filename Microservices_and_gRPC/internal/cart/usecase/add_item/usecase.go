@@ -41,20 +41,21 @@ func (uc *AddUseCase) AddItem(req cart.AddItemReq, ctx context.Context, skuId, u
 		return fmt.Errorf("%w: %v", cart.ErrGRPCUnavailable, err)
 	}
 
-	c := uc.repo.Create(userId)
+	uc.repo.Update(userId, func(c *cart.Cart) {
+		if idx := findItem(c, product.GetSku()); idx != -1 {
+			c.Items[idx].Count += req.Count
+			c.TotalPrice += req.Count * c.Items[idx].Price
+		} else {
+			c.Items = append(c.Items, cart.Item{
+				Sku:   product.Sku,
+				Name:  product.Name,
+				Count: req.Count,
+				Price: uint32(product.Price),
+			})
+			c.TotalPrice += uint32(product.Price) * req.Count
+		}
+	})
 
-	if idx := findItem(c, product.GetSku()); idx != -1 {
-		c.Items[idx].Count += req.Count
-		c.TotalPrice += req.Count * c.Items[idx].Price
-	} else {
-		c.Items = append(c.Items, cart.Item{
-			Sku:   product.Sku,
-			Name:  product.Name,
-			Count: req.Count,
-			Price: uint32(product.Price),
-		})
-		c.TotalPrice += uint32(product.Price) * req.Count
-	}
 	return nil
 }
 

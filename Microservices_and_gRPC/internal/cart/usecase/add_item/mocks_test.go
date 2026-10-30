@@ -57,6 +57,18 @@ func (mr *MockcartCreatorMockRecorder) Create(userId any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockcartCreator)(nil).Create), userId)
 }
 
+// Update mocks base method.
+func (m *MockcartCreator) Update(userId int64, fn func(*cart.Cart)) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Update", userId, fn)
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockcartCreatorMockRecorder) Update(userId, fn any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockcartCreator)(nil).Update), userId, fn)
+}
+
 // MockcartProductClient is a mock of cartProductClient interface.
 type MockcartProductClient struct {
 	ctrl     *gomock.Controller

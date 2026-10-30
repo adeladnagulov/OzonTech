@@ -12,6 +12,7 @@ import (
 
 type cartCreator interface {
 	Create(userId int64) *cart.Cart
+	Update(userId int64, fn func(*cart.Cart))
 }
 
 type cartProductClient interface {

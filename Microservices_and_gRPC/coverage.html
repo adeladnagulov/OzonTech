@@ -353,20 +353,21 @@ func (uc *AddUseCase) AddItem(req cart.AddItemReq, ctx context.Context, skuId, u
                 <span class="cov8" title="1">return fmt.Errorf("%w: %v", cart.ErrGRPCUnavailable, err)</span>
         }
 
-        <span class="cov8" title="1">c := uc.repo.Create(userId)
-</span>
-        <span class="cov8" title="1">if idx := findItem(c, product.GetSku()); idx != -1 </span>{
-                <span class="cov8" title="1">c.Items[idx].Count += req.Count
-                c.TotalPrice += req.Count * c.Items[idx].Price
-</span>        } else {
-                <span class="cov8" title="1">c.Items = append(c.Items, cart.Item{
-                        Sku:   product.Sku,
-                        Name:  product.Name,
-                        Count: req.Count,
-                        Price: uint32(product.Price),
-                })
-                c.TotalPrice += uint32(product.Price) * req.Count
-</span>        }
+        <span class="cov8" title="1">uc.repo.Update(userId, func(c *cart.Cart) </span>{
+                <span class="cov8" title="1">if idx := findItem(c, product.GetSku()); idx != -1 </span>{
+                        <span class="cov8" title="1">c.Items[idx].Count += req.Count
+                        c.TotalPrice += req.Count * c.Items[idx].Price
+</span>                } else {
+                        <span class="cov8" title="1">c.Items = append(c.Items, cart.Item{
+                                Sku:   product.Sku,
+                                Name:  product.Name,
+                                Count: req.Count,
+                                Price: uint32(product.Price),
+                        })
+                        c.TotalPrice += uint32(product.Price) * req.Count
+</span>                }
+        })
+
         <span class="cov8" title="1">return nil</span>
 }
 
@@ -481,10 +482,14 @@ func NewProductService(file string) (*ProductService, error) {
 		
 		<pre class="file" id="file9" style="display: none">package repository
 
-import "hw_2/internal/cart/domain/cart"
+import (
+        "hw_2/internal/cart/domain/cart"
+        "sync"
+)
 
 type CartsRepo struct {
         data map[int64]*cart.Cart
+        mu   *sync.RWMutex
 }
 
 func NewCartsRepo() *CartsRepo {
@@ -493,19 +498,30 @@ func NewCartsRepo() *CartsRepo {
 </span>        }
 }
 
-func (repo *CartsRepo) Create(userId int64) *cart.Cart {
+func (repo *CartsRepo) Update(userId int64, fn func(*cart.Cart)) {
+        <span class="cov0" title="0">repo.mu.Lock()
+        defer repo.mu.Unlock()
+</span>
         <span class="cov0" title="0">c, exists := repo.data[userId]
         if !exists </span>{
-                <span class="cov0" title="0">repo.data[int64(userId)] = &amp;cart.Cart{
+                <span class="cov0" title="0">c = &amp;cart.Cart{
                         Items:      []cart.Item{},
-                        TotalPrice: 0,
-</span>                }
-                <span class="cov0" title="0">c = repo.data[int64(userId)]
+                        TotalPrice: 0}
+                repo.data[userId] = c
 </span>        }
-        <span class="cov0" title="0">return c</span>
+        <span class="cov0" title="0">fn(c)</span>
+}
+
+func (repo *CartsRepo) Create(userId int64) *cart.Cart {
+        <span class="cov0" title="0">var rez *cart.Cart
+        repo.Update(userId, func(c *cart.Cart) </span>{ <span class="cov0" title="0">rez = c }</span>)
+        <span class="cov0" title="0">return rez</span>
 }
 
 func (repo *CartsRepo) Get(userId int64) (*cart.Cart, error) {
+        <span class="cov0" title="0">repo.mu.RLock()
+        defer repo.mu.RUnlock()
+</span>
         <span class="cov0" title="0">c, exists := repo.data[userId]
         if !exists </span>{
                 <span class="cov0" title="0">return nil, cart.ErrProductNotFound
